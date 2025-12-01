@@ -12,8 +12,10 @@ const cookieOptions = {
   maxAge: 30 * 24 * 60 * 60 * 1000,
 };
 
-const generateToken = (id: UserType["id_user"]) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+
+//The parameter id will be used as a key and its value as the value
+const generateToken = (id: UserType["id_user"], username : UserType["username"]) => {
+  return jwt.sign({ id, username }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
 };
@@ -50,11 +52,19 @@ export const registerUser = async (req: Request, res: Response) => {
       password: hashedPassword,
     });
 
-    const token = generateToken(newUser.id_user);
+    const newUserData =  newUser.toJSON();
+
+    const token = generateToken(newUser.id_user, newUser.username);
 
     res.cookie("token", token, cookieOptions);
 
-    return res.status(200).json({ data: newUser });
+    return res
+      .status(200)
+      .json({
+        xd: newUserData.id_user,
+        username: newUserData.username,
+        email: newUserData.email,
+      });
   } catch (error) {
     throw new Error(error);
   }
@@ -75,9 +85,8 @@ export const loginUser = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Invalid credentials" });
   }
 
-
   //Convert data obtained to JSON
-  const userData = user.toJSON()
+  const userData = user.toJSON();
 
   const isMatch = await bcrypt.compare(password, userData.password);
 
@@ -85,15 +94,16 @@ export const loginUser = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Invalid credentials" });
   }
 
-  
-
-  const token = generateToken(userData.id_user);
+  const token = generateToken(userData.id_user, userData.username);
   res.cookie("token", token, cookieOptions);
 
-  return res.json({ 
+  return res.json({
     id: userData.id_user,
     username: userData.username,
     email: userData.email,
-    avatar: userData.avatar
-   });
+  });
+};
+
+export const getMe = async (req: Request, res: Response) => {
+  res.json(req.body);
 };
