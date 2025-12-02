@@ -25,14 +25,14 @@ class Post extends Model {
   id_post!: number;
 
   @Column(DataType.TEXT)
-  content?: string;
+  content: string;
 
   @Column(DataType.STRING(255))
   image?: string;
 
   @AllowNull(false)
   @Column(DataType.STRING(100))
-  title?: string;
+  title: string;
 
   //Create foreign key from model User
   @ForeignKey(() => User)

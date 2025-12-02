@@ -1,5 +1,5 @@
 import express from 'express'
-import router from './routes/router'
+import router from './routes/users'
 import db from './config/db'
 import colors from 'colors'
 import authRouter from './routes/auth'
@@ -30,7 +30,7 @@ server.use(express.urlencoded({ extended: true }))
 //Install cookie-parser and its types in order to process cookies
 server.use(cookieParser())
 
-server.use('/api', router)
+server.use('/user', router)
 server.use('/auth', authRouter)
 
 
