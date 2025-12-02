@@ -22,6 +22,7 @@ const generateToken = (id: UserType["id_user"], username : UserType["username"])
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
+    
     const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
@@ -52,7 +53,7 @@ export const registerUser = async (req: Request, res: Response) => {
       password: hashedPassword,
     });
 
-    const newUserData =  newUser.toJSON();
+    const newUserData : UserType =  newUser.toJSON();
 
     const token = generateToken(newUser.id_user, newUser.username);
 
@@ -61,7 +62,7 @@ export const registerUser = async (req: Request, res: Response) => {
     return res
       .status(200)
       .json({
-        xd: newUserData.id_user,
+        id: newUserData.id_user,
         username: newUserData.username,
         email: newUserData.email,
       });
@@ -73,10 +74,16 @@ export const registerUser = async (req: Request, res: Response) => {
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
+  console.log(User.sequelize)
+ 
+
+
+
   if (!email || !password) {
     return res.status(400).json("All fields must be filled");
   }
 
+  
   const user = await User.findOne({
     where: { email: email },
   });
@@ -86,7 +93,7 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 
   //Convert data obtained to JSON
-  const userData = user.toJSON();
+  const userData : UserType = user.toJSON();
 
   const isMatch = await bcrypt.compare(password, userData.password);
 
