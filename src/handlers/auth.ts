@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { UserType } from "../types/index";
 import User from "../models/Users.model";
-import colors from "colors";
+import Post from "../models/Posts.model";
 
 const cookieOptions = {
   httpOnly: true,
@@ -12,9 +12,11 @@ const cookieOptions = {
   maxAge: 30 * 24 * 60 * 60 * 1000,
 };
 
-
 //The parameter id will be used as a key and its value as the value
-const generateToken = (id: UserType["id_user"], username : UserType["username"]) => {
+const generateToken = (
+  id: UserType["id_user"],
+  username: UserType["username"]
+) => {
   return jwt.sign({ id, username }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
@@ -22,7 +24,6 @@ const generateToken = (id: UserType["id_user"], username : UserType["username"])
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    
     const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
@@ -53,19 +54,18 @@ export const registerUser = async (req: Request, res: Response) => {
       password: hashedPassword,
     });
 
-    const newUserData : UserType =  newUser.toJSON();
+    const newUserData: UserType = newUser.toJSON();
 
     const token = generateToken(newUser.id_user, newUser.username);
 
     res.cookie("token", token, cookieOptions);
 
-    return res
-      .status(200)
-      .json({
-        id: newUserData.id_user,
-        username: newUserData.username,
-        email: newUserData.email,
-      });
+    return res.status(200).json({
+      id: newUserData.id_user,
+      username: newUserData.username,
+      email: newUserData.email,
+      avatar: newUserData.avatar,
+    });
   } catch (error) {
     throw new Error(error);
   }
@@ -74,12 +74,10 @@ export const registerUser = async (req: Request, res: Response) => {
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
- 
   if (!email || !password) {
     return res.status(400).json("All fields must be filled");
   }
 
-  
   const user = await User.findOne({
     where: { email: email },
   });
@@ -89,7 +87,7 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 
   //Convert data obtained to JSON
-  const userData : UserType = user.toJSON();
+  const userData: UserType = user.toJSON();
 
   const isMatch = await bcrypt.compare(password, userData.password);
 
@@ -97,6 +95,8 @@ export const loginUser = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Invalid credentials" });
   }
 
+  
+  
   const token = generateToken(userData.id_user, userData.username);
   res.cookie("token", token, cookieOptions);
 
@@ -104,6 +104,7 @@ export const loginUser = async (req: Request, res: Response) => {
     id: userData.id_user,
     username: userData.username,
     email: userData.email,
+    avatar: userData.avatar,
   });
 };
 

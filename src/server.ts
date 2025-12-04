@@ -4,6 +4,8 @@ import db from './config/db'
 import colors from 'colors'
 import authRouter from './routes/auth'
 import cookieParser from 'cookie-parser'
+import postsRouter from './routes/posts'
+
 
 const server = express()
 
@@ -32,6 +34,8 @@ server.use(cookieParser())
 
 server.use('/user', router)
 server.use('/auth', authRouter)
+server.use('/posts', postsRouter)
+
 
 
 export default server
