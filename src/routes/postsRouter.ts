@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getAllPosts } from '../handlers/posts'
+import { getAllPosts } from '../handlers/postsHandler'
 import { protect } from '../middleware/authMiddleware'
 const router = Router()
 

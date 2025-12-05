@@ -1,10 +1,10 @@
 import express from 'express'
-import router from './routes/users'
+import router from './routes/usersRouter'
 import db from './config/db'
 import colors from 'colors'
-import authRouter from './routes/auth'
+import authRouter from './routes/authRouter'
 import cookieParser from 'cookie-parser'
-import postsRouter from './routes/posts'
+import postsRouter from './routes/postsRouter'
 
 
 const server = express()

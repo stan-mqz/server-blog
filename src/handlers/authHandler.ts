@@ -109,5 +109,18 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 export const getMe = async (req: Request, res: Response) => {
+  
+      const user = await User.findByPk(req.body.id_user);
+
+
+    const userData: UserType = user.toJSON();
+
+    req.body = {
+      id: userData.id_user,
+      username: userData.username,
+      email: userData.email,
+      avatar: userData.avatar,
+    };
+  
   res.json(req.body);
 };
