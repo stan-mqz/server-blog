@@ -95,8 +95,6 @@ export const loginUser = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Invalid credentials" });
   }
 
-  
-  
   const token = generateToken(userData.id_user, userData.username);
   res.cookie("token", token, cookieOptions);
 
@@ -109,18 +107,5 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 export const getMe = async (req: Request, res: Response) => {
-  
-      const user = await User.findByPk(req.body.id_user);
-
-
-    const userData: UserType = user.toJSON();
-
-    req.body = {
-      id: userData.id_user,
-      username: userData.username,
-      email: userData.email,
-      avatar: userData.avatar,
-    };
-  
-  res.json(req.body);
+  res.json(req.userData);
 };

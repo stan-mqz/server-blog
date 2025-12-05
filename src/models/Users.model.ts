@@ -22,28 +22,28 @@ class User extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
-  id_user!: number; //Promise ts it will not be null
+  declare id_user: number; //Promise ts it will not be null
 
   //Column for name : unique, not null, string
   @Unique
   @AllowNull(false)
   @Column(DataType.STRING(100))
-  username!: string;
+  declare username: string;
 
   //Colum for e-mail: unique, not null, string
   @Unique
   @AllowNull(false)
   @Column(DataType.STRING(100))
-  email!: string;
+  declare email: string;
 
   //Column for password, not null, string
   @AllowNull(false)
   @Column(DataType.STRING(255))
-  password!: string;
+  declare password: string;
 
   //Column for avatar: string
   @Column(DataType.STRING(255))
-  avatar?: string; //? Tells ts it might be empty
+  declare avatar?: string; //? Tells ts it might be empty
 
   // Relationships
 
@@ -51,13 +51,13 @@ class User extends Model {
 
   //the user_id is being used as foreign key in posts, we specificy that a user can have many posts and a post can have one user
   @HasMany(() => Post, "user_id")
-  posts!: Post[];
+  declare posts: Post[];
 
   //One to many relationship: one user can have many comments
 
   //the user_id is being used as foreign key in comments, we specificy that a user can have many comments and a comment can have one user
   @HasMany(() => Comment, "user_id")
-  comments!: Comment[];
+  declare comments: Comment[];
 
   //One to many relationship: one user can have many likes
 

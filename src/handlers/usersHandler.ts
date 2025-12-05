@@ -3,6 +3,7 @@ import User from "../models/Users.model";
 import Post from "../models/Posts.model";
 import { UserType } from "../types";
 
+
 export const getUserById = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
@@ -19,7 +20,7 @@ export const getUserById = async (req: Request, res: Response) => {
     return res.json({
       id: userData.id_user,
       username: userData.username,
-      email : userData.email,
+      email: userData.email,
       avatar: userData.avatar,
       posts: userData.posts,
     });
@@ -36,37 +37,56 @@ export const updateUserData = async (req: Request, res: Response) => {
     const user = await User.findByPk(userId);
 
     if (!user) {
-      return res.status(404).json({ Message: "User Not Found" });
+      return res.status(404).json({ message: "User Not Found" });
     }
 
+   
     if (username !== undefined) {
       const usernameExists = await User.findOne({
-        where: { username },
+        where: { 
+          username,
+        },
       });
 
       if (usernameExists) {
-        return res.status(400).json("Username already exists");
+        return res.status(400).json({ message: "Username already exists" });
       }
 
       user.username = username;
     }
 
+  
     if (email !== undefined) {
       const emailExists = await User.findOne({
-        where: { email },
+        where: { 
+          email,
+        },
       });
 
       if (emailExists) {
-        return res.status(400).json("Email already exists");
+        return res.status(400).json({ message: "Email already exists" });
       }
 
       user.email = email;
     }
 
-    if (user.avatar !== undefined) user.avatar === avatar;
+  
+    if (avatar !== undefined) {
+      user.avatar = avatar;  
+    }
 
-    res.json();
+    await user.save();
+
+    return res.json({ 
+      message: "User updated successfully",
+      data: user 
+    });
+
   } catch (error) {
-    throw new Error(error);
+    console.error("Error updating user:", error);
+    return res.status(500).json({ 
+      message: "Error updating user",
+      error: error.message 
+    });
   }
 };
