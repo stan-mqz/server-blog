@@ -20,28 +20,28 @@ export class Like extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
-  id_like!: number;
+  declare id_like: number;
 
   //Foreign key to bring user_id
 
   @ForeignKey(() => User)
   @AllowNull(false)
   @Column(DataType.INTEGER)
-  user_id!: number;
+  declare user_id: number;
   //Foreign key to bring posts_id
 
   @ForeignKey(() => Post)
   @AllowNull(false)
   @Column(DataType.INTEGER)
-  post_id!: number;
+  declare post_id: number;
 
   //We say that user_id belongs to User
   @BelongsTo(() => User, "user_id")
-  user!: User;
+  declare user: User;
 
   //We say that post_id belongs to Post
   @BelongsTo(() => Post, "post_id")
-  post!: Post;
+  declare post: Post;
 }
 
 export default Like;
