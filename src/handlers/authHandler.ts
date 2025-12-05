@@ -109,3 +109,74 @@ export const loginUser = async (req: Request, res: Response) => {
 export const getMe = async (req: Request, res: Response) => {
   res.json(req.userData);
 };
+
+export const recoverEmail = async (req: Request, res: Response) => {
+  try {
+    //Todo: Add email-sending service for email validation before updating
+    const { email, newEmail } = req.body;
+
+    const user = await User.findOne({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(404).json("Email Not Found");
+    }
+
+    user.email = newEmail;
+
+    user.save();
+
+    const token = generateToken(
+      user.dataValues.id_user,
+      user.dataValues.username
+    );
+    res.cookie("token", token, cookieOptions);
+
+    return res.json({
+      id: user.dataValues.id_user,
+      username: user.dataValues.username,
+      email: user.dataValues.email,
+      avatar: user.dataValues.avatar,
+    });
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+export const recoverPassword = async (req: Request, res: Response) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    const user = await User.findOne({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(404).json("Email Not Found");
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+
+    const token = generateToken(
+      user.dataValues.id_user,
+      user.dataValues.username
+    );
+
+    res.cookie("token", token, cookieOptions);
+
+    user.save()
+    
+
+    return res.json({
+      id: user.dataValues.id_user,
+      username: user.dataValues.username,
+      email: user.dataValues.email,
+      avatar: user.dataValues.avatar,
+    });
+  } catch (error) {
+    throw new Error(error);
+  }
+};
