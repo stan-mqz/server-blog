@@ -7,7 +7,6 @@ import { cookieOptions } from "../config/cookies";
 import { transporter } from "../config/transporter";
 import { generateToken, generateEmailToken } from "../config/tokens";
 
-
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
@@ -64,39 +63,45 @@ export const registerUser = async (req: Request, res: Response) => {
 };
 
 export const loginUser = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json("All fields must be filled");
+    if (!email || !password) {
+      return res.status(400).json("All fields must be filled");
+    }
+
+    const user = await User.findOne({
+      where: { email: email },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.dataValues.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    if (!user.isVerified) {
+      return res
+        .status(400)
+        .json({ message: "Please Verify Your E-mail before logging in" });
+    }
+
+    const token = generateToken(user.dataValues.id_user);
+    res.cookie("token", token, cookieOptions);
+
+    return res.json({
+      id: user.dataValues.id_user,
+      username: user.dataValues.username,
+      email: user.dataValues.email,
+      avatar: user.dataValues.avatar,
+    });
+  } catch (error) {
+    throw new Error(error);
   }
-
-  const user = await User.findOne({
-    where: { email: email },
-  });
-
-  if (!user) {
-    return res.status(400).json({ message: "Invalid credentials" });
-  }
-
-  const isMatch = await bcrypt.compare(password, user.dataValues.password);
-
-  if (!isMatch) {
-    return res.status(400).json({ message: "Invalid credentials" });
-  }
-
-  if (!user.isVerified) {
-    return res.status(400).json({ message: "Please Verify Your E-mail before logging in" });
-  }
-
-  const token = generateToken(user.dataValues.id_user);
-  res.cookie("token", token, cookieOptions);
-
-  return res.json({
-    id: user.dataValues.id_user,
-    username: user.dataValues.username,
-    email: user.dataValues.email,
-    avatar: user.dataValues.avatar,
-  });
 };
 
 export const getMe = async (req: Request, res: Response) => {
@@ -178,7 +183,6 @@ export const verifyEmail = async (req: Request, res: Response) => {
       email: user.dataValues.email,
       avatar: user.dataValues.avatar,
     });
-
   } catch (error) {
     return res.status(400).json({ message: "Invalid or expired token" });
   }
