@@ -2,12 +2,11 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/Users.model";
 import { UserDataType, UserType } from "../types";
+import { JwtPayloadCustom } from "../types";
 
 
 //We use this to type our payload properties
-interface JwtPayloadCustom extends jwt.JwtPayload {
-  id: string;
-}
+
 
 export const protect = async (
   req: Request,

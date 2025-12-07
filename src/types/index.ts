@@ -1,3 +1,13 @@
+import jwt from 'jsonwebtoken'
+
+declare global {
+  namespace Express {
+    interface Request {
+      userData?: UserDataType;
+    }
+  }
+}
+
 export type UserType = {
     id_user: number,
     username: string,
@@ -17,10 +27,11 @@ export type PostType = {
     user_id: UserType['id_user']
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      userData?: UserDataType;
-    }
-  }
+export interface JwtPayloadCustom extends jwt.JwtPayload {
+  id: string;
+}
+
+export interface JwtPayloadEmailCustom extends jwt.JwtPayload {
+  id: string;
+  email: string,
 }

@@ -8,6 +8,7 @@ import {
   Unique,
   AllowNull,
   HasMany,
+  Default,
 } from "sequelize-typescript";
 import Post from "./Posts.model";
 import { Comment } from "./Comments.model";
@@ -45,6 +46,10 @@ class User extends Model {
   @Column(DataType.STRING(255))
   declare avatar?: string; //? Tells ts it might be empty
 
+  @AllowNull(false)
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  declare isVerified: boolean
   // Relationships
 
   //One to many relationship: one user can have many posts

@@ -1,26 +1,12 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import type { UserType } from "../types/index";
 import User from "../models/Users.model";
-import Post from "../models/Posts.model";
+import { JwtPayloadEmailCustom } from "../types/index";
+import { cookieOptions } from "../config/cookies";
+import { transporter } from "../config/transporter";
+import { generateToken, generateEmailToken } from "../config/tokens";
 
-const cookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const, //as const converts it into a literal type
-  maxAge: 30 * 24 * 60 * 60 * 1000,
-};
-
-//The parameter id will be used as a key and its value as the value
-const generateToken = (
-  id: UserType["id_user"],
-  username: UserType["username"]
-) => {
-  return jwt.sign({ id, username }, process.env.JWT_SECRET, {
-    expiresIn: "30d",
-  });
-};
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
@@ -52,19 +38,25 @@ export const registerUser = async (req: Request, res: Response) => {
       username: username,
       email: email,
       password: hashedPassword,
+      isVerified: false,
     });
 
-    const newUserData: UserType = newUser.toJSON();
+    const emailToken = generateEmailToken(newUser.id_user, newUser.email);
 
-    const token = generateToken(newUser.id_user, newUser.username);
+    const verificationUrl = `${process.env.VERIFICATION_URL}/auth/verify-email?token=${emailToken}`;
 
-    res.cookie("token", token, cookieOptions);
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+
+      to: newUser.email,
+
+      subject: "Verify Your Email",
+
+      html: `Please click the following link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`,
+    });
 
     return res.status(200).json({
-      id: newUserData.id_user,
-      username: newUserData.username,
-      email: newUserData.email,
-      avatar: newUserData.avatar,
+      message: "Registration successful. Please verify your email.",
     });
   } catch (error) {
     throw new Error(error);
@@ -86,23 +78,24 @@ export const loginUser = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Invalid credentials" });
   }
 
-  //Convert data obtained to JSON
-  const userData: UserType = user.toJSON();
-
-  const isMatch = await bcrypt.compare(password, userData.password);
+  const isMatch = await bcrypt.compare(password, user.dataValues.password);
 
   if (!isMatch) {
     return res.status(400).json({ message: "Invalid credentials" });
   }
 
-  const token = generateToken(userData.id_user, userData.username);
+  if (!user.isVerified) {
+    return res.status(400).json({ message: "Please Verify Your E-mail before logging in" });
+  }
+
+  const token = generateToken(user.dataValues.id_user);
   res.cookie("token", token, cookieOptions);
 
   return res.json({
-    id: userData.id_user,
-    username: userData.username,
-    email: userData.email,
-    avatar: userData.avatar,
+    id: user.dataValues.id_user,
+    username: user.dataValues.username,
+    email: user.dataValues.email,
+    avatar: user.dataValues.avatar,
   });
 };
 
@@ -127,18 +120,7 @@ export const recoverEmail = async (req: Request, res: Response) => {
 
     user.save();
 
-    const token = generateToken(
-      user.dataValues.id_user,
-      user.dataValues.username
-    );
-    res.cookie("token", token, cookieOptions);
-
-    return res.json({
-      id: user.dataValues.id_user,
-      username: user.dataValues.username,
-      email: user.dataValues.email,
-      avatar: user.dataValues.avatar,
-    });
+    res.status(200).json("E-mail Updated Correctly");
   } catch (error) {
     throw new Error(error);
   }
@@ -160,23 +142,44 @@ export const recoverPassword = async (req: Request, res: Response) => {
 
     user.password = hashedPassword;
 
-    const token = generateToken(
-      user.dataValues.id_user,
-      user.dataValues.username
-    );
+    user.save();
+
+    res.status(200).json("Password updated correctly");
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+export const verifyEmail = async (req: Request, res: Response) => {
+  const { verficationToken } = req.body;
+
+  try {
+    const decoded = jwt.verify(
+      verficationToken,
+      process.env.JWT_SECRET
+    ) as JwtPayloadEmailCustom;
+
+    const user = await User.findByPk(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await user.update({ isVerified: true });
+
+    const token = generateToken(user.dataValues.id_user);
 
     res.cookie("token", token, cookieOptions);
 
-    user.save()
-    
-
     return res.json({
+      message: "Email verified successfully",
       id: user.dataValues.id_user,
       username: user.dataValues.username,
       email: user.dataValues.email,
       avatar: user.dataValues.avatar,
     });
+
   } catch (error) {
-    throw new Error(error);
+    return res.status(400).json({ message: "Invalid or expired token" });
   }
 };
