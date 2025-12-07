@@ -3,11 +3,12 @@ import User from "../models/Users.model";
 import Post from "../models/Posts.model";
 import bcrypt from "bcrypt";
 
+
 export const getUserById = async (req: Request, res: Response) => {
   try {
     const { id_user } = req.userData;
 
-    const user = await User.findByPk(id_user, {
+    const user  = await User.findByPk(id_user, {
       include: [Post],
     });
 
@@ -98,6 +99,7 @@ export const updateUserPassword = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json("Email Not Found");
     }
+
 
     const isMatch = await bcrypt.compare(password, user.dataValues.password);
 
