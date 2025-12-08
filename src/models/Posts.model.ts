@@ -24,15 +24,15 @@ class Post extends Model {
   @Column(DataType.INTEGER)
   declare id_post: number;
 
+  @AllowNull(false)
+  @Column(DataType.STRING(100))
+  declare title: string;
+
   @Column(DataType.TEXT)
   declare content: string;
 
   @Column(DataType.STRING(255))
   declare image?: string;
-
-  @AllowNull(false)
-  @Column(DataType.STRING(100))
-  declare title: string;
 
   //Create foreign key from model User
   @ForeignKey(() => User)
