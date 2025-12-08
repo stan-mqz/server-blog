@@ -1,11 +1,12 @@
 import express from 'express'
+import dotenv from 'dotenv'
+dotenv.config() // 
 import router from './routes/usersRouter'
 import db from './config/db'
 import colors from 'colors'
 import authRouter from './routes/authRouter'
 import cookieParser from 'cookie-parser'
 import postsRouter from './routes/postsRouter'
-
 
 const server = express()
 
@@ -20,6 +21,8 @@ async function connectDataBase() {
 }
 
 connectDataBase()
+
+
 
 
 

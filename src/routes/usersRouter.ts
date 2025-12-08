@@ -6,11 +6,16 @@ import {
 } from "../handlers/usersHandler";
 import { protect } from "../middleware/authMiddleware";
 import { body } from "express-validator";
+import upload from "../middleware/uploadMiddleware";
+
 const router = Router();
 
 router.get("/profile", protect, getUserById);
+
+
 router.patch(
   "/update-info",
+  upload.single('avatar'),
   protect,
   body("username")
     .optional()
@@ -24,8 +29,6 @@ router.patch(
     .isEmail()
     .withMessage("Invalid email format")
     .normalizeEmail(),
-
-  body("avatar").optional().isURL().withMessage("Avatar must be a valid URL"),
 
   updateUserData
 );

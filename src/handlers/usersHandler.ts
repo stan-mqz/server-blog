@@ -2,13 +2,14 @@ import { Request, Response } from "express";
 import User from "../models/Users.model";
 import Post from "../models/Posts.model";
 import bcrypt from "bcrypt";
-
+import { cloudinaryOptions } from "../config/cloudinary";
+import fs from "fs";
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
     const { id_user } = req.userData;
 
-    const user  = await User.findByPk(id_user, {
+    const user = await User.findByPk(id_user, {
       include: [Post],
     });
 
@@ -30,7 +31,7 @@ export const getUserById = async (req: Request, res: Response) => {
 export const updateUserData = async (req: Request, res: Response) => {
   try {
     const { id_user } = req.userData;
-    const { username, email, avatar } = req.body;
+    const { username, email } = req.body;
 
     const user = await User.findByPk(id_user);
 
@@ -66,25 +67,34 @@ export const updateUserData = async (req: Request, res: Response) => {
       user.email = email;
     }
 
-    if (avatar !== undefined) {
-      user.avatar = avatar;
+    if (req.file) {
+      const uploadResult = await cloudinaryOptions.uploader.upload(
+        req.file.path,
+        {
+          folder: "avatars",
+        }
+      );
+
+      user.avatar = uploadResult.secure_url;
+
+      await user.save();
+
+      return res.json({
+        message: "Data updated successfully",
+        id: user.dataValues.id_user,
+        username: user.dataValues.username,
+        email: user.dataValues.email,
+        avatar: user.dataValues.avatar,
+      });
     }
-
-    await user.save();
-
-    return res.json({
-      message: "Data updated successfully",
-      id: user.dataValues.id_user,
-      username: user.dataValues.username,
-      email: user.dataValues.email,
-      avatar: user.dataValues.avatar,
-    });
   } catch (error) {
     console.error("Error updating user:", error);
     return res.status(500).json({
       message: "Error updating user",
       error: error.message,
     });
+  } finally {
+    await fs.unlinkSync(req.file.path);
   }
 };
 
@@ -99,7 +109,6 @@ export const updateUserPassword = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json("Email Not Found");
     }
-
 
     const isMatch = await bcrypt.compare(password, user.dataValues.password);
 
