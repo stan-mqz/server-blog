@@ -50,9 +50,13 @@ export const getPostById = async (req: Request, res: Response) => {
 
 export const createNewPost = async (req: Request, res: Response) => {
   try {
+    let imageURL;
     const { title, content } = req.body;
     const { id_user } = req.userData;
-    let imageURL  
+
+    if (!title || !content) {
+      return res.status(400).json('All fields must be filled')
+    }
      
     if (req.file) {
        const uploadResult = await cloudinaryOptions.uploader.upload(

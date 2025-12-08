@@ -8,6 +8,7 @@ import {
 import { protect } from "../middleware/authMiddleware";
 import { body } from "express-validator";
 import upload from "../middleware/uploadMiddleware";
+import { handleInputErrors } from "../middleware/errorMiddleware";
 
 const router = Router();
 
@@ -29,6 +30,7 @@ router.patch(
     .withMessage("Invalid email format")
     .normalizeEmail(),
 
+    handleInputErrors,
   updateUserData
 );
 
@@ -56,6 +58,7 @@ router.patch(
     .withMessage("Password must be at least 6 characters"),
 
   body("newPassword").exists().withMessage("New password is required"),
+  handleInputErrors,
   updateUserPassword
 );
 
