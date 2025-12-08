@@ -29,6 +29,7 @@ export const getUserById = async (req: Request, res: Response) => {
 };
 
 export const updateUserData = async (req: Request, res: Response) => {
+  
   try {
     const { id_user } = req.userData;
     const { username, email } = req.body;
@@ -67,6 +68,33 @@ export const updateUserData = async (req: Request, res: Response) => {
       user.email = email;
     }
 
+    await user.save();
+
+    return res.json({
+      message: "Data updated successfully",
+      id: user.dataValues.id_user,
+      username: user.dataValues.username,
+      email: user.dataValues.email,
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return res.status(500).json({
+      message: "Error updating user",
+      error: error.message,
+    });
+  }
+};
+
+export const updateUserAvatar = async (req: Request, res: Response) => {
+  try {
+    const { id_user } = req.userData;
+
+    const user = await User.findByPk(id_user);
+
+    if (!user) {
+      return res.status(404).json({ message: "User Not Found" });
+    }
+
     if (req.file) {
       const uploadResult = await cloudinaryOptions.uploader.upload(
         req.file.path,
@@ -76,23 +104,22 @@ export const updateUserData = async (req: Request, res: Response) => {
       );
 
       user.avatar = uploadResult.secure_url;
-
-      await user.save();
-
-      return res.json({
-        message: "Data updated successfully",
-        id: user.dataValues.id_user,
-        username: user.dataValues.username,
-        email: user.dataValues.email,
-        avatar: user.dataValues.avatar,
-      });
     }
+
+    user.save();
+
+    res.json({
+      message: "Avatar Updated Correctly",
+      avatar: user.avatar,
+    });
+
   } catch (error) {
-    console.error("Error updating user:", error);
+    console.error("Error Updating avatar:", error);
     return res.status(500).json({
-      message: "Error updating user",
+      message: "Error updating avatar",
       error: error.message,
     });
+
   } finally {
     await fs.unlinkSync(req.file.path);
   }

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getUserById,
+  updateUserAvatar,
   updateUserData,
   updateUserPassword,
 } from "../handlers/usersHandler";
@@ -12,10 +13,8 @@ const router = Router();
 
 router.get("/profile", protect, getUserById);
 
-
 router.patch(
   "/update-info",
-  upload.single('avatar'),
   protect,
   body("username")
     .optional()
@@ -31,6 +30,13 @@ router.patch(
     .normalizeEmail(),
 
   updateUserData
+);
+
+router.patch(
+  "/update-avatar",
+  protect,
+  upload.single("avatar"),
+  updateUserAvatar
 );
 
 router.patch(
