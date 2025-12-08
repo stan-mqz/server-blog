@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createNewPost,
+  deletePost,
   getAllPosts,
   getPostById,
 } from "../handlers/postsHandler";
@@ -47,4 +48,5 @@ router.post(
   createNewPost
 );
 
+router.delete('/delete/:id_post', protect, deletePost)
 export default router;
