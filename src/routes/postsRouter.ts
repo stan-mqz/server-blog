@@ -48,5 +48,14 @@ router.post(
   createNewPost
 );
 
-router.delete('/delete/:id_post', protect, deletePost)
+router.delete(
+  '/delete/:id_post', 
+  protect,
+    param("id_post")
+    .notEmpty()
+    .withMessage("Post ID is required")
+    .isInt({ min: 1 })
+    .withMessage("Post ID must be a valid positive integer"), 
+  deletePost
+)
 export default router;
