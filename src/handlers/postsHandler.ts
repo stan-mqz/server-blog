@@ -16,7 +16,9 @@ export const getAllPosts = async (req: Request, res: Response) => {
 
 export const getPostById = async (req: Request, res: Response) => {
   try {
+
     const { id_post } = req.params;
+    const {id_user} = req.userData
 
     const post = await Post.findByPk(id_post, {
       include: [User, Like, Comment],
@@ -25,6 +27,8 @@ export const getPostById = async (req: Request, res: Response) => {
     if (!post) {
       return res.status(404).json({ message: "Post Not Found" });
     }
+
+    const isOwner = post.user_id === id_user
 
     res.json({
       id_post: post.dataValues.id_post,
@@ -38,6 +42,7 @@ export const getPostById = async (req: Request, res: Response) => {
       },
       likes: post.dataValues.likes,
       comments: post.dataValues.comments,
+      isOwner
     });
   } catch (error) {
     console.error(error);
