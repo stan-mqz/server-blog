@@ -16,9 +16,8 @@ export const getAllPosts = async (req: Request, res: Response) => {
 
 export const getPostById = async (req: Request, res: Response) => {
   try {
-
     const { id_post } = req.params;
-    const {id_user} = req.userData
+    const { id_user } = req.userData;
 
     const post = await Post.findByPk(id_post, {
       include: [User, Like, Comment],
@@ -28,7 +27,7 @@ export const getPostById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Post Not Found" });
     }
 
-    const isOwner = post.user_id === id_user
+    const isOwner = post.user_id === id_user;
 
     res.json({
       id_post: post.dataValues.id_post,
@@ -42,7 +41,7 @@ export const getPostById = async (req: Request, res: Response) => {
       },
       likes: post.dataValues.likes,
       comments: post.dataValues.comments,
-      isOwner
+      isOwner,
     });
   } catch (error) {
     console.error(error);
@@ -93,12 +92,69 @@ export const createNewPost = async (req: Request, res: Response) => {
   }
 };
 
+export const editPost = async (req: Request, res: Response) => {
+  try {
+    let imageURL;
+    const { title, content } = req.body;
+    const { id_post } = req.params;
+    const { id_user } = req.userData;
+
+    const post = await Post.findByPk(id_post);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post Not Found" });
+    }
+
+    if (post.user_id !== id_user) {
+      return res
+        .status(401)
+        .json({ message: "You are not authorized to do this action" });
+    }
+
+    if (title !== undefined) {
+      post.title = title;
+    }
+
+    if (content !== undefined) {
+      post.content = content;
+    }
+
+    if (req.file) {
+      const uploadResult = await cloudinaryOptions.uploader.upload(
+        req.file.path,
+        {
+          folder: "posts",
+        }
+      );
+
+      imageURL = uploadResult.secure_url;
+
+      post.image = imageURL;
+    }
+
+    post.save();
+
+    res.json({
+      message: "Post Updated Correctly",
+      post: post,
+    });
+  } catch (error) {
+    console.error(error);
+  } finally {
+    if (req.file) fs.unlinkSync(req.file.path);
+  }
+};
+
 export const deletePost = async (req: Request, res: Response) => {
   try {
     const { id_post } = req.params;
     const { id_user } = req.userData;
 
     const post = await Post.findByPk(id_post);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post Not Found" });
+    }
 
     if (post.user_id !== id_user) {
       return res
@@ -113,4 +169,3 @@ export const deletePost = async (req: Request, res: Response) => {
     console.error(error);
   }
 };
-

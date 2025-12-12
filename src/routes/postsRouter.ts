@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createNewPost,
   deletePost,
+  editPost,
   getAllPosts,
   getPostById,
 } from "../handlers/postsHandler";
@@ -24,6 +25,7 @@ router.get(
   handleInputErrors,
   getPostById
 );
+
 router.post(
   "/create-post",
   protect,
@@ -48,14 +50,47 @@ router.post(
   createNewPost
 );
 
-router.delete(
-  '/delete/:id_post', 
+router.patch(
+  "/edit-post/:id_post",
   protect,
-    param("id_post")
+  upload.single("image"),
+  parseFormData,
+
+  param("id_post")
     .notEmpty()
     .withMessage("Post ID is required")
     .isInt({ min: 1 })
-    .withMessage("Post ID must be a valid positive integer"), 
+    .withMessage("Post ID must be a valid positive integer"),
+
+  body("title")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Title cannot be empty if provided")
+    .isLength({ min: 3, max: 200 })
+    .withMessage("Title must be between 3 and 200 characters")
+    .escape(),
+
+  body("content")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Content cannot be empty if provided")
+    .isLength({ min: 10, max: 500 })
+    .withMessage("Content must be between 10 and 500 characters"),
+
+  handleInputErrors,
+  editPost
+);
+
+router.delete(
+  "/delete/:id_post",
+  protect,
+  param("id_post")
+    .notEmpty()
+    .withMessage("Post ID is required")
+    .isInt({ min: 1 })
+    .withMessage("Post ID must be a valid positive integer"),
   deletePost
-)
+);
 export default router;
