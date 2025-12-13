@@ -7,11 +7,45 @@ import { cloudinaryOptions } from "../config/cloudinary";
 import fs from "fs";
 
 export const getAllPosts = async (req: Request, res: Response) => {
-  const posts = await Post.findAll();
+  try {
+    const posts = await Post.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ["id_user", "username", "avatar"],
+        },
+        {
+          model: Like,
+          attributes: ["user_id"],
+        },
+      ],
+    });
 
-  const postsData = posts.map((post) => post.toJSON());
+    const postsData = posts.map((post) => {
+      const likesCount = post.likes.length;
+      const likedByUser = post.likes.some(
+        (like) => like.user_id === post.user.id_user
+      );
 
-  res.json(postsData);
+      return {
+        id_post: post.id_post,
+        title: post.title,
+        content: post.content,
+        image: post.image,
+        user: post.user,
+        likesCount,
+        likedByUser,
+      };
+    });
+
+    res.json(postsData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error obtaining posts",
+      error: error.message,
+    });
+  }
 };
 
 export const getPostById = async (req: Request, res: Response) => {
@@ -20,7 +54,25 @@ export const getPostById = async (req: Request, res: Response) => {
     const { id_user } = req.userData;
 
     const post = await Post.findByPk(id_post, {
-      include: [User, Like, Comment],
+      include: [
+        {
+          model: User,
+          attributes: ["id_user", "username", "avatar"],
+        },
+        {
+          model: Like,
+          attributes: ["user_id"],
+        },
+        {
+          model: Comment,
+          include: [
+            {
+              model: User,
+              attributes: ["id_user", "username", "avatar"],
+            },
+          ],
+        },
+      ],
     });
 
     if (!post) {
@@ -28,21 +80,21 @@ export const getPostById = async (req: Request, res: Response) => {
     }
 
     const isOwner = post.user_id === id_user;
+    const likesCount = post.likes.length;
+    const likedByUser = post.likes.some((like) => like.user_id === id_user);
 
     res.json({
-      id_post: post.dataValues.id_post,
-      title: post.dataValues.title,
-      content: post.dataValues.content,
-      image: post.dataValues.image,
-      user: {
-        id_user: post.dataValues.user.id_user,
-        username: post.dataValues.user.username,
-        avatar: post.dataValues.user.avatar,
-      },
-      likes: post.dataValues.likes,
-      comments: post.dataValues.comments,
+      id_post: post.id_post,
+      title: post.title,
+      content: post.content,
+      image: post.image,
+      user: post.user,
+      likesCount,
+      likedByUser,
+      comments: post.comments,
       isOwner,
     });
+    
   } catch (error) {
     console.error(error);
     return res.status(500).json({
