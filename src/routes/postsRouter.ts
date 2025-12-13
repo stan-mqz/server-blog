@@ -11,6 +11,7 @@ import upload from "../middleware/uploadMiddleware";
 import { parseFormData } from "../middleware/parseFormData";
 import { body, param } from "express-validator";
 import { handleInputErrors } from "../middleware/errorMiddleware";
+import { likePost, unlikePost } from "../config/likesHandler";
 const router = Router();
 
 router.get("/all", protect, getAllPosts);
@@ -93,4 +94,8 @@ router.delete(
     .withMessage("Post ID must be a valid positive integer"),
   deletePost
 );
+
+router.post("/:id_post/like", protect, likePost);
+router.delete("/:id_post/like", protect, unlikePost);
+
 export default router;

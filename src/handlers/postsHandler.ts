@@ -1,4 +1,4 @@
-import e, { Request, Response } from "express";
+import { Request, Response } from "express";
 import Post from "../models/Posts.model";
 import User from "../models/Users.model";
 import Like from "../models/Likes.model";
@@ -94,7 +94,7 @@ export const getPostById = async (req: Request, res: Response) => {
       comments: post.comments,
       isOwner,
     });
-    
+
   } catch (error) {
     console.error(error);
     return res.status(500).json({
