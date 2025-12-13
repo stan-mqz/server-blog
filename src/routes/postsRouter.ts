@@ -95,7 +95,29 @@ router.delete(
   deletePost
 );
 
-router.post("/:id_post/like", protect, likePost);
-router.delete("/:id_post/like", protect, unlikePost);
+router.post(
+  "/:id_post/like",
+  protect,
+  param("id_post")
+    .notEmpty()
+    .withMessage("Post ID is required")
+    .isInt({ min: 1 })
+    .withMessage("Post ID must be a valid positive integer"),
+  handleInputErrors,
+  likePost
+);
+
+
+router.delete(
+  "/:id_post/like",
+  protect,
+  param("id_post")
+    .notEmpty()
+    .withMessage("Post ID is required")
+    .isInt({ min: 1 })
+    .withMessage("Post ID must be a valid positive integer"),
+  handleInputErrors,
+  unlikePost
+);
 
 export default router;
