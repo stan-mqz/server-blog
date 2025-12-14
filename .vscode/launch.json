@@ -1,22 +1,59 @@
 {
+  // Versión del formato de configuración de depuración de VS Code
   "version": "0.2.0",
+  
+  // Array que contiene todas las configuraciones de depuración disponibles
   "configurations": [
-   {
-  "name": "Debug TypeScript",
-  "type": "node",
-  "request": "launch",
-  "program": "${workspaceFolder}/dist/index.js",
-  "preLaunchTask": "npm: build",
-  "console": "integratedTerminal",
-  "envFile": "${workspaceFolder}/.env",
-  "outFiles": [
-    "${workspaceFolder}/dist/**/*.js"
-  ],
-  "skipFiles": [
-    "<node_internals>/**",
-    "${workspaceFolder}/node_modules/**"
-  ]
-}
-
+    {
+      // Nombre que aparece en el dropdown del panel de depuración
+      "name": "Debug TypeScript",
+      
+      // Tipo de debugger a usar (node para Node.js, chrome para navegador, etc.)
+      "type": "node",
+      
+      // Modo de depuración:
+      // - "launch": inicia una nueva instancia del programa
+      // - "attach": se conecta a un proceso ya en ejecución
+      "request": "launch",
+      
+      // Ruta al archivo JavaScript principal que se ejecutará
+      // ${workspaceFolder} = ruta raíz del proyecto abierto en VS Code
+      // Se ejecuta el JS compilado, NO el archivo TypeScript original
+      "program": "${workspaceFolder}/dist/index.js",
+      
+      // Tarea que se ejecuta ANTES de iniciar la depuración
+      // "npm: build" busca el script "build" en package.json y lo ejecuta
+      // Esto compila TypeScript a JavaScript antes de depurar
+      "preLaunchTask": "npm: build",
+      
+      // Dónde se muestra la salida del programa:
+      // - "integratedTerminal": usa la terminal integrada de VS Code
+      // - "internalConsole": usa la consola de depuración (panel Debug Console)
+      // - "externalTerminal": abre una ventana de terminal externa
+      "console": "integratedTerminal",
+      
+      // Ruta al archivo que contiene variables de entorno
+      // Carga automáticamente las variables definidas en .env
+      // Ejemplo: DATABASE_URL=postgres://localhost/mydb
+      "envFile": "${workspaceFolder}/.env",
+      
+      // Patrones de archivos JavaScript generados por la compilación
+      // Ayuda al debugger a encontrar los source maps para mapear JS → TS
+      // **/*.js = todos los archivos .js en cualquier subdirectorio de dist/
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      
+      // Archivos que el debugger debe ignorar durante la depuración
+      // No se detendrá en breakpoints dentro de estos archivos
+      "skipFiles": [
+        // Ignora todo el código interno de Node.js (módulos nativos)
+        "<node_internals>/**",
+        
+        // Ignora todas las dependencias instaladas en node_modules
+        // Útil para no entrar accidentalmente en código de librerías externas
+        "${workspaceFolder}/node_modules/**"
+      ]
+    }
   ]
 }
