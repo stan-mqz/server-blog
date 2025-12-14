@@ -1,14 +1,15 @@
 import express from 'express'
 import dotenv from 'dotenv'
-dotenv.config() // 
 import router from './routes/usersRouter'
 import db from './config/db'
 import colors from 'colors'
 import authRouter from './routes/authRouter'
 import cookieParser from 'cookie-parser'
 import postsRouter from './routes/postsRouter'
+import commentsRouter from './routes/commentsRouter'
 
 const server = express()
+dotenv.config() 
 
 async function connectDataBase() {
   try {
@@ -38,6 +39,7 @@ server.use(cookieParser())
 server.use('/user', router)
 server.use('/auth', authRouter)
 server.use('/posts', postsRouter)
+server.use('/comments', commentsRouter)
 
 
 

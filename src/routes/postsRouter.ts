@@ -11,7 +11,7 @@ import upload from "../middleware/uploadMiddleware";
 import { parseFormData } from "../middleware/parseFormData";
 import { body, param } from "express-validator";
 import { handleInputErrors } from "../middleware/errorMiddleware";
-import { likePost, unlikePost } from "../config/likesHandler";
+import { likePost, unlikePost } from "../handlers/likesHandler";
 const router = Router();
 
 router.get("/all", protect, getAllPosts);
