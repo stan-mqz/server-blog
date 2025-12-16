@@ -7,6 +7,8 @@ import authRouter from './routes/authRouter'
 import cookieParser from 'cookie-parser'
 import postsRouter from './routes/postsRouter'
 import commentsRouter from './routes/commentsRouter'
+import cors from 'cors'
+import morgan from 'morgan'
 
 const server = express()
 dotenv.config() 
@@ -24,11 +26,13 @@ async function connectDataBase() {
 connectDataBase()
 
 
-
-
-
-
 //For every routing file you need to create a new instance
+server.use(cors({
+  origin: `${process.env.CLIENT_URL}`, // URL de tu frontend
+  credentials: true 
+}))
+
+server.use(morgan('dev'))
 
 server.use(express.json())
 server.use(express.urlencoded({ extended: true }))
