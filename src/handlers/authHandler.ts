@@ -42,7 +42,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const emailToken = generateEmailToken(newUser.id_user, newUser.email);
 
-    const verificationUrl = `${process.env.VERIFICATION_URL}/auth/verify-email?token=${emailToken}`;
+    const verificationUrl = `${process.env.CLIENT_URL}/auth/verify-email?token=${emailToken}`;
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
@@ -178,12 +178,27 @@ export const verifyEmail = async (req: Request, res: Response) => {
 
     return res.json({
       message: "Email verified successfully",
-      id: user.dataValues.id_user,
-      username: user.dataValues.username,
-      email: user.dataValues.email,
-      avatar: user.dataValues.avatar,
+      user: {
+        id: user.dataValues.id_user,
+        username: user.dataValues.username,
+        email: user.dataValues.email,
+        avatar: user.dataValues.avatar,
+      },
     });
   } catch (error) {
     return res.status(400).json({ message: "Invalid or expired token" });
+  }
+};
+
+export const logoutUser = (req: Request, res: Response) => {
+  try {
+    res.cookie("token", "", {
+      ...cookieOptions,
+      maxAge: 0, 
+    });
+
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Logout failed" });
   }
 };

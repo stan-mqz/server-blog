@@ -3,6 +3,7 @@ const router = Router();
 import {
   getMe,
   loginUser,
+  logoutUser,
   recoverEmail,
   recoverPassword,
   registerUser,
@@ -101,5 +102,7 @@ router.post(
 
 
 router.get("/me", protect, getMe);
+
+router.post("/logout", protect, logoutUser);
 
 export default router;
