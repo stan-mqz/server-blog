@@ -23,7 +23,6 @@ export const likePost = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({
-      message: "Post liked",
       like,
     });
   } catch (error) {

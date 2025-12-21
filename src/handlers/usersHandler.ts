@@ -14,7 +14,7 @@ export const getUserById = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({ Message: "User Not Found" });
+      return res.status(404).json({ message: "User Not Found" });
     }
     return res.json({
       id: user.dataValues.id_user,
@@ -99,7 +99,7 @@ export const updateUserAvatar = async (req: Request, res: Response) => {
       const uploadResult = await cloudinaryOptions.uploader.upload(
         req.file.path,
         {
-          folder: "avatars",
+          folder: "blog/avatars",
         }
       );
 
@@ -134,20 +134,20 @@ export const updateUserPassword = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json("Email Not Found");
+      return res.status(404).json({message: "Email Not Found"});
     }
 
     const isMatch = await bcrypt.compare(password, user.dataValues.password);
 
     if (!isMatch) {
-      return res.status(400).json("Invalid Password");
+      return res.status(400).json({message: 'Invalid Password'});
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     user.password = hashedPassword;
 
-    res.json("Password Updated Successfully");
+    res.status(200).json("Password Updated Successfully");
 
     user.save();
   } catch (error) {

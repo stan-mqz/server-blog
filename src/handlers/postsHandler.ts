@@ -8,6 +8,8 @@ import fs from "fs";
 
 export const getAllPosts = async (req: Request, res: Response) => {
   try {
+    const { id_user } = req.userData;
+
     const posts = await Post.findAll({
       include: [
         {
@@ -18,13 +20,25 @@ export const getAllPosts = async (req: Request, res: Response) => {
           model: Like,
           attributes: ["user_id"],
         },
+        {
+          model: Comment,
+          include: [
+            {
+              model: User,
+              attributes: ["id_user", "username", "avatar"],
+            },
+          ],
+        },
       ],
+
+      order: [["id_post", "DESC"]]
     });
 
     const postsData = posts.map((post) => {
+      const isOwner = post.user_id === id_user;
       const likesCount = post.likes.length;
       const likedByUser = post.likes.some(
-        (like) => like.user_id === post.user.id_user
+        (like) => like.user_id === id_user
       );
 
       return {
@@ -35,6 +49,8 @@ export const getAllPosts = async (req: Request, res: Response) => {
         user: post.user,
         likesCount,
         likedByUser,
+        comments: post.comments,
+        isOwner,
       };
     });
 
@@ -81,7 +97,7 @@ export const getPostById = async (req: Request, res: Response) => {
 
     const isOwner = post.user_id === id_user;
     const likesCount = post.likes.length;
-    const likedByUser = post.likes.some((like) => like.user_id === id_user);
+    const likedByUser = post.likes.filter((like) => like.user_id === id_user);
 
     res.json({
       id_post: post.id_post,
@@ -94,7 +110,6 @@ export const getPostById = async (req: Request, res: Response) => {
       comments: post.comments,
       isOwner,
     });
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -118,7 +133,7 @@ export const createNewPost = async (req: Request, res: Response) => {
       const uploadResult = await cloudinaryOptions.uploader.upload(
         req.file.path,
         {
-          folder: "posts",
+          folder: "blog/posts",
         }
       );
 
@@ -175,7 +190,7 @@ export const editPost = async (req: Request, res: Response) => {
       const uploadResult = await cloudinaryOptions.uploader.upload(
         req.file.path,
         {
-          folder: "posts",
+          folder: "blog/posts",
         }
       );
 
@@ -186,7 +201,7 @@ export const editPost = async (req: Request, res: Response) => {
 
     post.save();
 
-    res.json({
+    res.status(200).json({
       message: "Post Updated Correctly",
       post: post,
     });

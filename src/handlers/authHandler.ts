@@ -24,11 +24,11 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     if (usernameExists) {
-      return res.status(400).json("User already exists");
+      return res.status(400).json({message: "User already exists"});
     }
 
     if (emailExists) {
-      return res.status(400).json("Email already exists");
+      return res.status(400).json({message: "Email already exists"});
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -110,7 +110,7 @@ export const getMe = async (req: Request, res: Response) => {
 
 export const recoverEmail = async (req: Request, res: Response) => {
   try {
-    //Todo: Add email-sending service for email validation before updating
+    
     const { email, newEmail } = req.body;
 
     const user = await User.findOne({
@@ -118,14 +118,14 @@ export const recoverEmail = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json("Email Not Found");
+      return res.status(404).json({message: "Email Not Found"});
     }
 
     user.email = newEmail;
 
     user.save();
 
-    res.status(200).json("E-mail Updated Correctly");
+    res.status(200).json({message: "E-mail Updated Correctly"});
   } catch (error) {
     throw new Error(error);
   }
@@ -140,7 +140,7 @@ export const recoverPassword = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json("Email Not Found");
+      return res.status(404).json({message: "Email Not Found"});
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -149,7 +149,7 @@ export const recoverPassword = async (req: Request, res: Response) => {
 
     user.save();
 
-    res.status(200).json("Password updated correctly");
+    res.status(200).json({message: "Password updated correctly"});
   } catch (error) {
     throw new Error(error);
   }
