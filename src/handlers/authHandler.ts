@@ -37,6 +37,7 @@ export const registerUser = async (req: Request, res: Response) => {
       username: username,
       email: email,
       password: hashedPassword,
+      avatar: process.env.DEFAULT_AVATAR,
       isVerified: false,
     });
 
@@ -175,6 +176,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
     const token = generateToken(user.dataValues.id_user);
 
     res.cookie("token", token, cookieOptions);
+
 
     return res.json({
       message: "Email verified successfully",
