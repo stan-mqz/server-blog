@@ -30,16 +30,25 @@ export const getAllPosts = async (req: Request, res: Response) => {
           ],
         },
       ],
-
-      order: [["id_post", "DESC"]]
+      order: [["id_post", "DESC"]],
     });
 
     const postsData = posts.map((post) => {
       const isOwner = post.user_id === id_user;
+
+      const comments = post.comments.map((comment) => ({
+        id_comment: comment.id_comment,
+        content_comment: comment.content_comment,
+        user_id: comment.user_id,
+        post_id: comment.post_id,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        user: comment.user,
+        isOwner: comment.user_id === id_user,
+      }));
+
       const likesCount = post.likes.length;
-      const likedByUser = post.likes.some(
-        (like) => like.user_id === id_user
-      );
+      const likedByUser = post.likes.some((like) => like.user_id === id_user);
 
       return {
         id_post: post.id_post,
@@ -49,7 +58,7 @@ export const getAllPosts = async (req: Request, res: Response) => {
         user: post.user,
         likesCount,
         likedByUser,
-        comments: post.comments,
+        comments,
         isOwner,
       };
     });
@@ -99,6 +108,17 @@ export const getPostById = async (req: Request, res: Response) => {
     const likesCount = post.likes.length;
     const likedByUser = post.likes.filter((like) => like.user_id === id_user);
 
+    const comments = post.comments.map((comment) => ({
+      id_comment: comment.id_comment,
+      content_comment: comment.content_comment,
+      user_id: comment.user_id,
+      post_id: comment.post_id,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      user: comment.user,
+      isOwner: comment.user_id === id_user,
+    }));
+
     res.json({
       id_post: post.id_post,
       title: post.title,
@@ -107,7 +127,7 @@ export const getPostById = async (req: Request, res: Response) => {
       user: post.user,
       likesCount,
       likedByUser,
-      comments: post.comments,
+      comments: comments,
       isOwner,
     });
   } catch (error) {

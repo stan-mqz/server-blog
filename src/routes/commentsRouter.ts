@@ -1,6 +1,10 @@
 import Router from "express";
 import { protect } from "../middleware/authMiddleware";
-import { createNewComment } from "../handlers/commentsHandler";
+import {
+  createNewComment,
+  editComment,
+  deleteComment,
+} from "../handlers/commentsHandler";
 import { body, param } from "express-validator";
 import { handleInputErrors } from "../middleware/errorMiddleware";
 
@@ -20,11 +24,46 @@ router.post(
     .trim()
     .notEmpty()
     .withMessage("Comment content is required")
-    .isLength({ min: 1, max: 300 })
-    .withMessage("Comment must be between 1 and 300 characters"),
+    .isLength({ min: 1, max: 30 })
+    .withMessage("Comment must be between 1 and 30 characters"),
 
   handleInputErrors,
   createNewComment
+);
+
+router.patch(
+  "/edit-comment/:id_comment",
+  protect,
+
+  param("id_comment")
+    .notEmpty()
+    .withMessage("Comment ID is required")
+    .isInt({ min: 1 })
+    .withMessage("Comment ID must be a valid positive integer"),
+
+  body("content_comment")
+    .trim()
+    .notEmpty()
+    .withMessage("Comment content is required")
+    .isLength({ min: 1, max: 30 })
+    .withMessage("Comment must be between 1 and 30 characters"),
+
+  handleInputErrors,
+  editComment
+);
+
+router.delete(
+  "/delete-comment/:id_comment",
+  protect,
+
+  param("id_comment")
+    .notEmpty()
+    .withMessage("Comment ID is required")
+    .isInt({ min: 1 })
+    .withMessage("Comment ID must be a valid positive integer"),
+
+  handleInputErrors,
+  deleteComment
 );
 
 export default router;
