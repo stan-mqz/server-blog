@@ -25,7 +25,7 @@ router.patch(
     .withMessage("Username must be at least 3 characters"),
 
   body("email")
-    .optional()
+    .optional() 
     .isEmail()
     .withMessage("Invalid email format")
     .normalizeEmail(),

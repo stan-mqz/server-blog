@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Comment from "../models/Comments.model";
 
+
 export const createNewComment = async (req: Request, res: Response) => {
   try {
     const { id_post } = req.params;
@@ -40,7 +41,9 @@ export const editComment = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Not Authorized" });
     }
 
-    comment.content_comment = content_comment;
+     comment.content_comment = content_comment
+
+     await comment.save()
 
     return res.status(200).json({ message: "Comment updated correctly", comment });
   } catch (error) {

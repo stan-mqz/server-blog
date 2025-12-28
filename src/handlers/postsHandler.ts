@@ -28,6 +28,8 @@ export const getAllPosts = async (req: Request, res: Response) => {
               attributes: ["id_user", "username", "avatar"],
             },
           ],
+
+          order: [['updatedAt', 'DESC']]
         },
       ],
       order: [["id_post", "DESC"]],
@@ -96,6 +98,7 @@ export const getPostById = async (req: Request, res: Response) => {
               attributes: ["id_user", "username", "avatar"],
             },
           ],
+
         },
       ],
     });

@@ -3,7 +3,7 @@ import { protect } from "../middleware/authMiddleware";
 import {
   createNewComment,
   editComment,
-  deleteComment,
+  deleteComment
 } from "../handlers/commentsHandler";
 import { body, param } from "express-validator";
 import { handleInputErrors } from "../middleware/errorMiddleware";
@@ -45,8 +45,8 @@ router.patch(
     .trim()
     .notEmpty()
     .withMessage("Comment content is required")
-    .isLength({ min: 1, max: 30 })
-    .withMessage("Comment must be between 1 and 30 characters"),
+    .isLength({ min: 1, max: 100 })
+    .withMessage("Comment must be between 1 and 100 characters"),
 
   handleInputErrors,
   editComment
@@ -65,5 +65,7 @@ router.delete(
   handleInputErrors,
   deleteComment
 );
+
+
 
 export default router;
