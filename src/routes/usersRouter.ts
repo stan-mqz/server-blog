@@ -12,7 +12,7 @@ import { handleInputErrors } from "../middleware/errorMiddleware";
 
 const router = Router();
 
-router.get("/profile", protect, getUserById);
+router.get("/profile/:id_user", protect, getUserById);
 
 router.patch(
   "/update-info",

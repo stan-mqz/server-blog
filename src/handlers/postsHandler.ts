@@ -108,7 +108,7 @@ export const getPostById = async (req: Request, res: Response) => {
 
     const isOwner = post.user_id === id_user;
     const likesCount = post.likes.length;
-    const likedByUser = post.likes.filter((like) => like.user_id === id_user);
+    const likedByUser = post.likes.some((like) => like.user_id === id_user);
 
     const comments = post.comments.map((comment) => ({
       id_comment: comment.id_comment,
@@ -143,6 +143,7 @@ export const getPostById = async (req: Request, res: Response) => {
 
 export const createNewPost = async (req: Request, res: Response) => {
   try {
+    console.log(req.body)
     let imageURL;
     const { title, content } = req.body;
     const { id_user } = req.userData;
@@ -221,7 +222,7 @@ export const editPost = async (req: Request, res: Response) => {
       post.image = imageURL;
     }
 
-    post.save();
+    await post.save();
 
     res.status(200).json({
       message: "Post Updated Correctly",

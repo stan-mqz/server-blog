@@ -43,17 +43,19 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const emailToken = generateEmailToken(newUser.id_user, newUser.email);
 
+    
     const verificationUrl = `${process.env.CLIENT_URL}/auth/verify-email?token=${emailToken}`;
+    
+    console.log(verificationUrl)
+    // await transporter.sendMail({
+    //   from: process.env.EMAIL_USER,
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+    //   to: newUser.email,
 
-      to: newUser.email,
+    //   subject: "Verify Your Email",
 
-      subject: "Verify Your Email",
-
-      html: `Please click the following link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`,
-    });
+    //   html: `Please click the following link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`,
+    // });
 
     return res.status(200).json({
       message: "Registration successful. Please verify your email.",
@@ -95,7 +97,7 @@ export const loginUser = async (req: Request, res: Response) => {
     res.cookie("token", token, cookieOptions);
 
     return res.json({
-      id: user.dataValues.id_user,
+      id_user: user.dataValues.id_user,
       username: user.dataValues.username,
       email: user.dataValues.email,
       avatar: user.dataValues.avatar,

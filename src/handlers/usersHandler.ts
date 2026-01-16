@@ -4,24 +4,75 @@ import Post from "../models/Posts.model";
 import bcrypt from "bcrypt";
 import { cloudinaryOptions } from "../config/cloudinary";
 import fs from "fs";
+import Like from "../models/Likes.model";
+import Comment from "../models/Comments.model";
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const { id_user } = req.userData;
+    const { id_user } = req.params;
+    const authenticatedUserId = req.userData?.id_user; 
 
     const user = await User.findByPk(id_user, {
-      include: [Post],
+      include: [
+        {
+          model: Post,
+          include: [
+            {
+              model: User,
+              attributes: ["id_user", "username", "avatar"],
+            },
+            {
+              model: Like,
+              attributes: ["user_id"],
+            },
+            {
+              model: Comment,
+              include: [
+                {
+                  model: User,
+                  attributes: ["id_user", "username", "avatar"],
+                },
+              ],
+            },
+          ],
+        },
+      ],
     });
 
     if (!user) {
       return res.status(404).json({ message: "User Not Found" });
     }
+
+    
+    const postsWithOwnership =
+      user.dataValues.posts?.map((post) => {
+        const isOwner = post.user_id === authenticatedUserId;
+
+        const comments = post.comments?.map((comment) => ({
+          ...comment.dataValues,
+          isOwner: comment.user_id === authenticatedUserId,
+        }));
+
+        const likesCount = post.likes?.length || 0;
+        const likedByUser =
+          post.likes?.some((like) => like.user_id === authenticatedUserId) ||
+          false;
+
+        return {
+          ...post.dataValues,
+          likesCount,
+          likedByUser,
+          comments,
+          isOwner,
+        };
+      }) || [];
+
     return res.json({
       id: user.dataValues.id_user,
       username: user.dataValues.username,
       email: user.dataValues.email,
       avatar: user.dataValues.avatar,
-      posts: user.dataValues.posts,
+      posts: postsWithOwnership,
     });
   } catch (error) {
     throw new Error(error);
@@ -29,7 +80,6 @@ export const getUserById = async (req: Request, res: Response) => {
 };
 
 export const updateUserData = async (req: Request, res: Response) => {
-  
   try {
     const { id_user } = req.userData;
     const { username, email } = req.body;
@@ -112,14 +162,12 @@ export const updateUserAvatar = async (req: Request, res: Response) => {
       message: "Avatar Updated Correctly",
       avatar: user.avatar,
     });
-
   } catch (error) {
     console.error("Error Updating avatar:", error);
     return res.status(500).json({
       message: "Error updating avatar",
       error: error.message,
     });
-
   } finally {
     await fs.unlinkSync(req.file.path);
   }
@@ -134,13 +182,13 @@ export const updateUserPassword = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({message: "Email Not Found"});
+      return res.status(404).json({ message: "Email Not Found" });
     }
 
     const isMatch = await bcrypt.compare(password, user.dataValues.password);
 
     if (!isMatch) {
-      return res.status(400).json({message: 'Invalid Password'});
+      return res.status(400).json({ message: "Invalid Password" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
