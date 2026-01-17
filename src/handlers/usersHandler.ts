@@ -4,75 +4,24 @@ import Post from "../models/Posts.model";
 import bcrypt from "bcrypt";
 import { cloudinaryOptions } from "../config/cloudinary";
 import fs from "fs";
-import Like from "../models/Likes.model";
-import Comment from "../models/Comments.model";
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
     const { id_user } = req.params;
-    const authenticatedUserId = req.userData?.id_user; 
 
     const user = await User.findByPk(id_user, {
-      include: [
-        {
-          model: Post,
-          include: [
-            {
-              model: User,
-              attributes: ["id_user", "username", "avatar"],
-            },
-            {
-              model: Like,
-              attributes: ["user_id"],
-            },
-            {
-              model: Comment,
-              include: [
-                {
-                  model: User,
-                  attributes: ["id_user", "username", "avatar"],
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      include: [Post],
     });
 
     if (!user) {
       return res.status(404).json({ message: "User Not Found" });
     }
-
-    
-    const postsWithOwnership =
-      user.dataValues.posts?.map((post) => {
-        const isOwner = post.user_id === authenticatedUserId;
-
-        const comments = post.comments?.map((comment) => ({
-          ...comment.dataValues,
-          isOwner: comment.user_id === authenticatedUserId,
-        }));
-
-        const likesCount = post.likes?.length || 0;
-        const likedByUser =
-          post.likes?.some((like) => like.user_id === authenticatedUserId) ||
-          false;
-
-        return {
-          ...post.dataValues,
-          likesCount,
-          likedByUser,
-          comments,
-          isOwner,
-        };
-      }) || [];
-
     return res.json({
-      id: user.dataValues.id_user,
+      id_user: user.dataValues.id_user,
       username: user.dataValues.username,
       email: user.dataValues.email,
       avatar: user.dataValues.avatar,
-      posts: postsWithOwnership,
+      posts: user.dataValues.posts,
     });
   } catch (error) {
     throw new Error(error);
@@ -150,7 +99,7 @@ export const updateUserAvatar = async (req: Request, res: Response) => {
         req.file.path,
         {
           folder: "blog/avatars",
-        }
+        },
       );
 
       user.avatar = uploadResult.secure_url;
