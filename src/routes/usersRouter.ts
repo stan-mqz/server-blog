@@ -2,8 +2,9 @@ import { Router } from "express";
 import {
   getUserById,
   updateUserAvatar,
-  updateUserData,
   updateUserPassword,
+  updateUsername,
+  updateUserEmail,
 } from "../handlers/usersHandler";
 import { protect } from "../middleware/authMiddleware";
 import { body } from "express-validator";
@@ -15,30 +16,37 @@ const router = Router();
 router.get("/profile/:id_user", protect, getUserById);
 
 router.patch(
-  "/update-info",
+  "/update-username",
   protect,
   body("username")
-    .optional()
+    .exists()
+    .withMessage("Username is required")
     .isString()
     .trim()
     .isLength({ min: 3 })
     .withMessage("Username must be at least 3 characters"),
+  handleInputErrors,
+  updateUsername,
+);
 
+router.patch(
+  "/update-email",
+  protect,
   body("email")
-    .optional() 
+    .exists()
+    .withMessage("Email is required")
     .isEmail()
     .withMessage("Invalid email format")
     .normalizeEmail(),
-
-    handleInputErrors,
-  updateUserData
+  handleInputErrors,
+  updateUserEmail,
 );
 
 router.patch(
   "/update-avatar",
   protect,
   upload.single("avatar"),
-  updateUserAvatar
+  updateUserAvatar,
 );
 
 router.patch(
@@ -59,7 +67,7 @@ router.patch(
 
   body("newPassword").exists().withMessage("New password is required"),
   handleInputErrors,
-  updateUserPassword
+  updateUserPassword,
 );
 
 export default router;

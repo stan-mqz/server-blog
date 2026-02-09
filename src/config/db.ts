@@ -7,7 +7,7 @@ import Comment from "../models/Comments.model"
 
 dotenv.config()
 
-const db = new Sequelize(process.env.DATABASE_URL!, {
+const db = new Sequelize(process.env.DATABASE_NEON!, {
   // models: [__dirname + "/../models/**/*.ts"],
   models: [User, Post, Like, Comment],
   logging: false

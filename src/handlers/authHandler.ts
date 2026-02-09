@@ -47,15 +47,15 @@ export const registerUser = async (req: Request, res: Response) => {
     const verificationUrl = `${process.env.CLIENT_URL}/auth/verify-email?token=${emailToken}`;
     
     console.log(verificationUrl)
-    // await transporter.sendMail({
-    //   from: process.env.EMAIL_USER,
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
 
-    //   to: newUser.email,
+      to: newUser.email,
 
-    //   subject: "Verify Your Email",
+      subject: "Verify Your Email",
 
-    //   html: `Please click the following link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`,
-    // });
+      html: `Please click the following link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`,
+    });
 
     return res.status(200).json({
       message: "Registration successful. Please verify your email.",

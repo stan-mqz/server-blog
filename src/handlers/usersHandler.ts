@@ -28,10 +28,10 @@ export const getUserById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUserData = async (req: Request, res: Response) => {
+export const updateUsername = async (req: Request, res: Response) => {
   try {
     const { id_user } = req.userData;
-    const { username, email } = req.body;
+    const { username } = req.body;
 
     const user = await User.findByPk(id_user);
 
@@ -39,50 +39,65 @@ export const updateUserData = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User Not Found" });
     }
 
-    if (username !== undefined) {
-      const usernameExists = await User.findOne({
-        where: {
-          username,
-        },
-      });
+    const usernameExists = await User.findOne({
+      where: { username },
+    });
 
-      if (usernameExists) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-
-      user.username = username;
+    if (usernameExists) {
+      return res.status(400).json({ message: "Username already exists" });
     }
 
-    if (email !== undefined) {
-      const emailExists = await User.findOne({
-        where: {
-          email,
-        },
-      });
-
-      if (emailExists) {
-        return res.status(400).json({ message: "Email already exists" });
-      }
-
-      user.email = email;
-    }
-
+    user.username = username;
     await user.save();
 
     return res.json({
-      message: "Data updated successfully",
-      id: user.dataValues.id_user,
-      username: user.dataValues.username,
-      email: user.dataValues.email,
+      message: "Username updated successfully",
+      username: user.username,
     });
   } catch (error) {
-    console.error("Error updating user:", error);
+    console.error("Error updating username:", error);
     return res.status(500).json({
-      message: "Error updating user",
+      message: "Error updating username",
       error: error.message,
     });
   }
 };
+
+export const updateUserEmail = async (req: Request, res: Response) => {
+  try {
+    const { id_user } = req.userData;
+    const { email } = req.body;
+
+    const user = await User.findByPk(id_user);
+
+    if (!user) {
+      return res.status(404).json({ message: "User Not Found" });
+    }
+
+    const emailExists = await User.findOne({
+      where: { email },
+    });
+
+    if (emailExists) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+
+    user.email = email;
+    await user.save();
+
+    return res.json({
+      message: "Email updated successfully",
+      email: user.email,
+    });
+  } catch (error) {
+    console.error("Error updating email:", error);
+    return res.status(500).json({
+      message: "Error updating email",
+      error: error.message,
+    });
+  }
+};
+
 
 export const updateUserAvatar = async (req: Request, res: Response) => {
   try {
