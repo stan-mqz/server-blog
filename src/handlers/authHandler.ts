@@ -46,7 +46,6 @@ export const registerUser = async (req: Request, res: Response) => {
     
     const verificationUrl = `${process.env.CLIENT_URL}/auth/verify-email?token=${emailToken}`;
     
-    console.log(verificationUrl)
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
 
