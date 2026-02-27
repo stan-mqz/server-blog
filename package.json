@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
-    "build": "npx tsc"
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -18,8 +18,7 @@
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.10.1",
     "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "tsx": "^4.21.0"
   },
   "dependencies": {
     "@cloudinary-util/types": "^1.6.0",
@@ -43,6 +42,7 @@
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.7",
     "sequelize-typescript": "^2.1.6",
-    "supports-color": "^10.2.2"
+    "supports-color": "^10.2.2",
+    "typescript": "^5.9.3"
   }
 }
