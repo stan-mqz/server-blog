@@ -4,8 +4,8 @@ export const transporter = nodemailer.createTransport(
   process.env.NODE_ENV === "production"
     ? {
         host: "smtp-relay.brevo.com",
-        port: 465,
-        secure: true,
+        port: 587,
+        secure: false,
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASSWORD,
