@@ -7,6 +7,9 @@ import { cookieOptions } from "../config/cookies";
 import { transporter } from "../config/transporter";
 import { generateToken, generateEmailToken } from "../config/tokens";
 
+import nodemailer from "nodemailer";
+import { BrevoClient } from "@getbrevo/brevo";
+
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
@@ -24,11 +27,11 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     if (usernameExists) {
-      return res.status(400).json({message: "User already exists"});
+      return res.status(400).json({ message: "User already exists" });
     }
 
     if (emailExists) {
-      return res.status(400).json({message: "Email already exists"});
+      return res.status(400).json({ message: "Email already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -43,27 +46,39 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const emailToken = generateEmailToken(newUser.id_user, newUser.email);
 
-    
     const verificationUrl = `${process.env.CLIENT_URL}/auth/verify-email?token=${emailToken}`;
-    
-    await transporter.sendMail({
-      from: process.env.EMAIL_SENDER,
 
-      to: newUser.email,
+    if (process.env.NODE_ENV === "NODE_ENV") {
+      const brevo = new BrevoClient({
+        apiKey: process.env.BREVO_API_KEY,
+        timeoutInSeconds: 10,
+      });
 
-      subject: "Verify Your Email",
+      await brevo.transactionalEmails.sendTransacEmail({
+        subject: "Verify Your Email",
+        htmlContent: `Please click the following link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`,
+        sender: { name: "no-reply", email: process.env.EMAIL_SENDER },
+        to: [{ email: `${newUser.email}` }],
+      });
+    } else {
+      await transporter.sendMail({
+        from: process.env.EMAIL_SENDER,
 
-      html: `Please click the following link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`,
-    });
+        to: newUser.email,
+
+        subject: "Verify Your Email",
+
+        html: `Please click the following link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`,
+      });
+    }
 
     return res.status(200).json({
       message: "Registration successful. Please verify your email.",
     });
   } catch (error) {
-    throw new Error(error);
+    console.log(error);
   }
 };
-
 export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -112,7 +127,6 @@ export const getMe = async (req: Request, res: Response) => {
 
 export const recoverEmail = async (req: Request, res: Response) => {
   try {
-    
     const { email, newEmail } = req.body;
 
     const user = await User.findOne({
@@ -120,14 +134,14 @@ export const recoverEmail = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({message: "Email Not Found"});
+      return res.status(404).json({ message: "Email Not Found" });
     }
 
     user.email = newEmail;
 
     user.save();
 
-    res.status(200).json({message: "E-mail Updated Correctly"});
+    res.status(200).json({ message: "E-mail Updated Correctly" });
   } catch (error) {
     throw new Error(error);
   }
@@ -142,7 +156,7 @@ export const recoverPassword = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({message: "Email Not Found"});
+      return res.status(404).json({ message: "Email Not Found" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -151,7 +165,7 @@ export const recoverPassword = async (req: Request, res: Response) => {
 
     user.save();
 
-    res.status(200).json({message: "Password updated correctly"});
+    res.status(200).json({ message: "Password updated correctly" });
   } catch (error) {
     throw new Error(error);
   }
@@ -163,7 +177,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
   try {
     const decoded = jwt.verify(
       verficationToken,
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
     ) as JwtPayloadEmailCustom;
 
     const user = await User.findByPk(decoded.id);
@@ -177,7 +191,6 @@ export const verifyEmail = async (req: Request, res: Response) => {
     const token = generateToken(user.dataValues.id_user);
 
     res.cookie("token", token, cookieOptions);
-
 
     return res.json({
       message: "Email verified successfully",
@@ -197,7 +210,7 @@ export const logoutUser = (req: Request, res: Response) => {
   try {
     res.cookie("token", "", {
       ...cookieOptions,
-      maxAge: 0, 
+      maxAge: 0,
     });
 
     return res.status(200).json({ message: "Logged out successfully" });
