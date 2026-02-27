@@ -48,7 +48,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const verificationUrl = `${process.env.CLIENT_URL}/auth/verify-email?token=${emailToken}`;
 
-    if (process.env.NODE_ENV === "NODE_ENV") {
+    if (process.env.NODE_ENV === "production") {
       const brevo = new BrevoClient({
         apiKey: process.env.BREVO_API_KEY,
         timeoutInSeconds: 10,
